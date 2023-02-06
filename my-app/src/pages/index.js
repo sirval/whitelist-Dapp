@@ -17,7 +17,7 @@ export default function Home() {
 
   const getProviderOrSigner = async (needSigner = false) => {
     // Connect to Metamask
-    const provider = web3ModalRef.current.connect();
+    const provider = await web3ModalRef.current.connect();
     const web3Provider = new providers.Web3Provider(provider);
 
     //check if signers network is goerli
@@ -68,7 +68,7 @@ export default function Home() {
   //add address to whitelist on button clicked
   const addAddressToWhitelist = async () => {
     try {
-      const signer = getProviderOrSigner(true);
+      const signer = await getProviderOrSigner(true);
       const whitelistContract = new Contract(
         WHITELIST_CONTRACT_ADDRESS,
         abi,
@@ -91,14 +91,14 @@ export default function Home() {
   //check if address id whitelisted
   const checkIfAddressIsWhitelisted = async () => {
     try {
-      const signer = getProviderOrSigner(true);
+      const signer = await getProviderOrSigner(true);
       const whitelistContract = new Contract(
         WHITELIST_CONTRACT_ADDRESS,
         abi,
         signer
       );
       //get address of signer
-      const address = signer.getAddress();
+      const address = await signer.getAddress();
       //get addresses that has been whitelisted
       const _joinedWhitelist = await whitelistContract.whitelistedAddresses(
         address
