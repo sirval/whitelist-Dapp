@@ -12,7 +12,6 @@ export default function Home() {
   const [numOfWhitelisted, setNumOfWhitelisted] = useState(0);
   const [joinedWhitelist, setJoinedWhitelist] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [maxWhitelistedAddress, setMaxWhitelistedAddress] = useState(50);
   const web3ModalRef = useRef();
 
   const getProviderOrSigner = async (needSigner = false) => {
@@ -175,8 +174,7 @@ export default function Home() {
             Its an NFT collection for developers in Crypto.
           </div>
           <div className={styles.description}>
-            {numOfWhitelisted}/{maxWhitelistedAddress} have already joined the
-            whitelist
+            {numOfWhitelisted} have already joined the whitelist
           </div>
           {renderButton()}
         </div>
