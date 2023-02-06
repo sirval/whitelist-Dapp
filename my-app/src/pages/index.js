@@ -5,10 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
 import { Contract, providers } from "ethers";
 import Swal from "sweetalert2";
+import { WHITELIST_CONTRACT_ADDRESS, abi } from "constants";
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
   const [numOfWhitelisted, setNumOfWhitelisted] = useState(0);
+  const [joinedWhitelist, setJoinedWhitelist] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [maxWhitelistedAddress, setMaxWhitelistedAddress] = useState(50);
   const web3ModalRef = useRef();
 
   const getProviderOrSigner = async (needSigner = false) => {
@@ -34,15 +38,95 @@ export default function Home() {
     return web3Provider;
   };
 
-  const checkIfAddressIsWhitelisted = async () => {
+  //button to join the whitelist
+  const renderButton = () => {
+    if (walletConnected) {
+      if (joinedWhitelist) {
+        return (
+          <div className={styles.description}>
+            <h6>Thanks for joining the whitelist!</h6>
+          </div>
+        );
+      } else if (loading) {
+        return <button className={styles.button}>Loading...</button>;
+      } else {
+        return (
+          <button onClick={addAddressToWhitelist} className={styles.button}>
+            Join the Whitelist
+          </button>
+        );
+      }
+    } else {
+      return (
+        <button className={styles.button} onClick={connectWallet}>
+          Connect Wallet
+        </button>
+      );
+    }
+  };
+
+  //add address to whitelist on button clicked
+  const addAddressToWhitelist = async () => {
     try {
       const signer = getProviderOrSigner(true);
-      const whitelistContract = new Contract();
+      const whitelistContract = new Contract(
+        WHITELIST_CONTRACT_ADDRESS,
+        abi,
+        signer
+      );
+
+      const tx = await whitelistContract.addAddressToWhitelist();
+      setLoading(true);
+      //wait for transaction to be mined
+      await tx.wait();
+      setLoading(false);
+      //get total number whitelisted
+      await getNumberOfWhitelisted();
+      setJoinedWhitelist(true);
     } catch (error) {
       console.error(error);
     }
   };
 
+  //check if address id whitelisted
+  const checkIfAddressIsWhitelisted = async () => {
+    try {
+      const signer = getProviderOrSigner(true);
+      const whitelistContract = new Contract(
+        WHITELIST_CONTRACT_ADDRESS,
+        abi,
+        signer
+      );
+      //get address of signer
+      const address = signer.getAddress();
+      //get addresses that has been whitelisted
+      const _joinedWhitelist = await whitelistContract.whitelistedAddresses(
+        address
+      );
+      setJoinedWhitelist(_joinedWhitelist);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //get number of whitelisted addresses from the contract
+  const getNumberOfWhitelisted = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const whitelistContract = new Contract(
+        WHITELIST_CONTRACT_ADDRESS,
+        abi,
+        provider
+      );
+      const _numberOfwhitelisted =
+        await whitelistContract.numAddressesWhitelisted();
+      setNumOfWhitelisted(_numberOfwhitelisted);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //connect wallet
   const connectWallet = async () => {
     try {
       await getProviderOrSigner();
@@ -74,14 +158,17 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className={styles.main}>
-        <h1 className={styles.title}>Welcome to Crypto Devs!</h1>
-        <br />
-
-        <div className={styles.description}>
-          {numOfWhitelisted} have already joined the whitelist
+        <div>
+          <h1 className={styles.title}>Welcome to Crypto Devs!</h1>
+          <div className={styles.description}>
+            Its an NFT collection for developers in Crypto.
+          </div>
+          <div className={styles.description}>
+            {numOfWhitelisted}/{maxWhitelistedAddress} have already joined the
+            whitelist
+          </div>
+          {renderButton()}
         </div>
-        <h6>Connected to MetaMask? {walletConnected ? "Yep" : "Nope"}</h6>
-
         <div>
           <Image
             width={500}
