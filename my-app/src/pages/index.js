@@ -44,21 +44,32 @@ export default function Home() {
       if (joinedWhitelist) {
         return (
           <div className={styles.description}>
-            <h6>Thanks for joining the whitelist!</h6>
+            <br />
+            <h3 style={{ color: "#40C298" }}>
+              Thanks for joining the whitelist!
+            </h3>
           </div>
         );
       } else if (loading) {
         return <button className={styles.button}>Loading...</button>;
       } else {
         return (
-          <button onClick={addAddressToWhitelist} className={styles.button}>
+          <button
+            style={{ backgroundColor: "#7928C9" }}
+            onClick={addAddressToWhitelist}
+            className={styles.button}
+          >
             Join the Whitelist
           </button>
         );
       }
     } else {
       return (
-        <button className={styles.button} onClick={connectWallet}>
+        <button
+          style={{ backgroundColor: "#BA513D" }}
+          className={styles.button}
+          onClick={connectWallet}
+        >
           Connect Wallet
         </button>
       );
